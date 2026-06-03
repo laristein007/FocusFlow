@@ -1,0 +1,15 @@
+Color hex:
+Background - 1e1e1eff
+Timer - f9f9f9ff
+Checklist, pause button, active checklist items - f1fa8cff
+Notepad title - ff79c6ff
+Notepad background - 44475aff
+Notepad text - ccccccff
+Status text (Break, Pause, Pomodor, Work) - 4d4d4dff
+
+Fonts:
+Timer - Round Digitalio
+Status text (Break, Pause, Pomodoro, Work) - Code New Roman
+Checklist, Notepad (title) - Humaroid
+Checklist, notepad items and text - Code New Roman
+            notepad inactive items - Code New Roman italicized
