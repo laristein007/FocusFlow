@@ -23,6 +23,14 @@ The Pomodoro Productivity Application is designed to help users improve focus, o
 + Track completed focus sessions on a calendar
 + Save productivity data and preferences for later use
 
+## Executing
+
+Download FocusFlow.jar
+
+Open folder/directory in terminal
+
+Run with ``` java -jar FocusFlow.jar ```
+
 **Mockup**
 
 ![Current mockup](https://github.com/tysonhowery/Capstone-Pomodoro/blob/main/resources/mockup/iteration1/ui%20start.png)
