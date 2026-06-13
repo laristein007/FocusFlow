@@ -16,7 +16,7 @@ The Pomodoro Productivity Application is designed to help users improve focus, o
 
 ## Scope
 
-+ Develop a Pomodoro Productivity App where users can:
+Develop a Pomodoro Productivity App where users can:
 + Create and manage timed Pomodoro focus sessions
 + Take notes during or after work sessions
 + Create and complete task checklists
