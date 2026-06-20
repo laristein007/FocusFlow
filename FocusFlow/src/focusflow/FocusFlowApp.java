@@ -5,8 +5,12 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -20,36 +24,23 @@ import java.util.List;
  * Chris McCourt – Tester/Documentation Specialist
  *
  * Version 1.0
- *
- * FocusFlow is a productivity application that helps users stay focused using
- * the Pomodoro technique. The app includes a countdown timer, a notes section,
- * and a checklist so users can organize their work during focus sessions.
- *
- * Main features:
- * - Pomodoro timer for focus sessions
- * - Start, pause, and reset timer controls
- * - Notes area for writing session notes
- * - Checklist for adding and removing tasks
- * - Session tracking for completed Pomodoro sessions
- * - Notification popup when a session is complete
- *
- * This class is responsible for building the JavaFX user interface and connecting
- * the app's managers, including the timer, notes, tasks, session tracking, and
- * notifications.
- */ 
+ */
 public class FocusFlowApp extends Application {
     private final TimerManager timerManager = new TimerManager();
     private final NotesManager notesManager = new NotesManager();
     private final TaskManager taskManager = new TaskManager();
     private final SessionTracker sessionTracker = new SessionTracker();
     private final NotificationManager notificationManager = new NotificationManager();
+    private final PlaylistManager playlistManager = new PlaylistManager();
 
     private final Label timerLabel = new Label("25:00");
     private final Button startPauseButton = new Button("▶");
 
+    private MediaPlayer mediaPlayer;
+    private final ListView<File> playlistView = new ListView<>();
+
     @Override
     public void start(Stage stage) {
-        // Displays the current timer mode, such as Pomodoro, Work, or Paused.
         Label modeLabel = new Label("Pomodoro");
         modeLabel.setStyle("""
                 -fx-font-size: 82px;
@@ -79,12 +70,9 @@ public class FocusFlowApp extends Application {
                 -fx-cursor: hand;
                 """);
 
-        // The Save Notes button is hidden because notes are loaded automatically
-        // and the button is not currently shown in the interface.
         Button saveNotesButton = new Button("Save Notes");
         saveNotesButton.setVisible(false);
 
-        // Text area where the user can write or view notes.
         TextArea notesArea = new TextArea();
         notesArea.setPromptText("lorem ipsum ..\nIdem 240");
         notesArea.setText(notesManager.loadNotes());
@@ -100,7 +88,6 @@ public class FocusFlowApp extends Application {
 
         notesArea.textProperty().addListener((observable, oldValue, newValue) -> notesManager.saveNotes(newValue));
 
-        // Input field used to type a new checklist item.
         TextField taskInput = new TextField();
         taskInput.setPromptText("Add checklist item");
         taskInput.setStyle("""
@@ -110,7 +97,6 @@ public class FocusFlowApp extends Application {
                 -fx-font-size: 14px;
                 """);
 
-        // Button that adds the typed checklist item to the list.
         Button addTaskButton = new Button("+");
         addTaskButton.setStyle("""
                 -fx-background-color: #f3ff6b;
@@ -119,7 +105,6 @@ public class FocusFlowApp extends Application {
                 -fx-cursor: hand;
                 """);
 
-        // Button that deletes the selected or checked checklist item.
         Button deleteTaskButton = new Button("Delete");
         deleteTaskButton.setStyle("""
                 -fx-background-color: #ff5252;
@@ -154,14 +139,11 @@ public class FocusFlowApp extends Application {
             taskList.getItems().add(taskCheckBox);
         }
 
-        // Adds a new task when the user clicks the plus button.
-        // The task is saved through TaskManager and displayed as a checkbox.
         addTaskButton.setOnAction(event -> {
             String taskText = taskInput.getText();
 
             if (taskText != null && !taskText.isBlank()) {
                 String trimmedTask = taskText.trim();
-
                 taskManager.addTask(trimmedTask);
 
                 CheckBox newTask = new CheckBox(trimmedTask);
@@ -172,10 +154,8 @@ public class FocusFlowApp extends Application {
             }
         });
 
-        // Allows the user to press Enter in the text field to add a task.
         taskInput.setOnAction(event -> addTaskButton.fire());
 
-        // Deletes either the currently selected task or any checked tasks.
         deleteTaskButton.setOnAction(event -> {
             CheckBox selectedTask = taskList.getSelectionModel().getSelectedItem();
 
@@ -197,12 +177,8 @@ public class FocusFlowApp extends Application {
         Label statusLabel = new Label("Ready to focus");
         statusLabel.setVisible(false);
 
-        // Updates the timer label every time the TimerManager reports a tick.
         timerManager.setOnTick(this::updateTimerLabel);
 
-        // Runs when the Pomodoro session finishes.
-        // Tracks the completed session, shows a notification,
-        // resets the play button, and updates the status message.
         timerManager.setOnComplete(() -> {
             sessionTracker.trackSession();
             notificationManager.sendNotification("Session Complete", "Pomodoro session complete! Take a break.");
@@ -219,8 +195,7 @@ public class FocusFlowApp extends Application {
             statusLabel.setText("Session complete. Total sessions: " + sessionTracker.getCompletedSessions());
         });
 
-        // Starts or pauses the timer depending on the current timer state.
-        startPauseButton.setOnAction(e -> {
+        startPauseButton.setOnAction(event -> {
             if (timerManager.isRunning()) {
                 timerManager.pauseSession();
 
@@ -236,6 +211,7 @@ public class FocusFlowApp extends Application {
                 statusLabel.setText("Timer paused");
             } else {
                 timerManager.startSession();
+
                 startPauseButton.setText("Ⅱ");
                 startPauseButton.setStyle("""
                         -fx-font-size: 52px;
@@ -243,15 +219,16 @@ public class FocusFlowApp extends Application {
                         -fx-text-fill: #f3ff6b;
                         -fx-cursor: hand;
                         """);
+
                 modeLabel.setText("Work");
                 statusLabel.setText("Focus session running");
             }
         });
 
-        // Resets the timer back to the original Pomodoro time.
-        resetButton.setOnAction(e -> {
+        resetButton.setOnAction(event -> {
             timerManager.resetTimer();
             updateTimerLabel(timerManager.getRemainingSeconds());
+
             startPauseButton.setText("▶");
             startPauseButton.setStyle("""
                     -fx-font-size: 52px;
@@ -259,11 +236,11 @@ public class FocusFlowApp extends Application {
                     -fx-text-fill: #4dff7a;
                     -fx-cursor: hand;
                     """);
+
             modeLabel.setText("Pomodoro");
             statusLabel.setText("Timer reset");
         });
 
-        // Section title for the timer area.
         Label titleLabel = new Label("FocusFlow Pomodoro");
         titleLabel.setStyle("""
                 -fx-text-fill: #f3ff6b;
@@ -271,7 +248,6 @@ public class FocusFlowApp extends Application {
                 -fx-font-weight: bold;
                 """);
 
-        // Section title for the notes area.
         Label notesLabel = new Label("Notes");
         notesLabel.setStyle("""
                 -fx-text-fill: #f3ff6b;
@@ -279,7 +255,6 @@ public class FocusFlowApp extends Application {
                 -fx-font-weight: bold;
                 """);
 
-        // Section title for the checklist area.
         Label checklistLabel = new Label("Checklist");
         checklistLabel.setStyle("""
                 -fx-text-fill: #f3ff6b;
@@ -287,32 +262,212 @@ public class FocusFlowApp extends Application {
                 -fx-font-weight: bold;
                 """);
 
-        // Layout containers that organize the timer, notes, and checklist sections.
+        Label musicLabel = new Label("Music Player");
+        musicLabel.setStyle("""
+                -fx-text-fill: #f3ff6b;
+                -fx-font-size: 22px;
+                -fx-font-weight: bold;
+                """);
+
+        playlistView.setPrefSize(210, 220);
+        playlistView.setStyle("""
+                -fx-control-inner-background: #262422;
+                -fx-background-color: #262422;
+                -fx-background-radius: 3px;
+                -fx-border-color: transparent;
+                -fx-text-fill: #dddddd;
+                """);
+
+        playlistView.setCellFactory(listView -> new ListCell<>() {
+            @Override
+            protected void updateItem(File file, boolean empty) {
+                super.updateItem(file, empty);
+
+                if (empty || file == null) {
+                    setText(null);
+                } else {
+                    setText(file.getName());
+                    setStyle("-fx-text-fill: #f1ff72; -fx-font-size: 14px;");
+                }
+            }
+        });
+
+        playlistView.getItems().addAll(playlistManager.loadPlaylist());
+
+        Button addSongButton = new Button("Add Song");
+        addSongButton.setStyle("""
+                -fx-background-color: #f3ff6b;
+                -fx-text-fill: #1c1c1c;
+                -fx-font-weight: bold;
+                -fx-cursor: hand;
+                """);
+
+        Button removeSongButton = new Button("Remove");
+        removeSongButton.setStyle("""
+                -fx-background-color: #ff5252;
+                -fx-text-fill: #ffffff;
+                -fx-font-weight: bold;
+                -fx-cursor: hand;
+                """);
+
+        Button playPauseSongButton = new Button("▶");
+        playPauseSongButton.setStyle("""
+                -fx-font-size: 24px;
+                -fx-background-color: transparent;
+                -fx-text-fill: #4dff7a;
+                -fx-cursor: hand;
+                """);
+
+        Button stopSongButton = new Button("■");
+        stopSongButton.setStyle("""
+                -fx-font-size: 24px;
+                -fx-background-color: transparent;
+                -fx-text-fill: #ff5252;
+                -fx-cursor: hand;
+                """);
+
+        Button nextSongButton = new Button("Next");
+        nextSongButton.setStyle("""
+                -fx-background-color: #50546c;
+                -fx-text-fill: #ffffff;
+                -fx-font-weight: bold;
+                -fx-cursor: hand;
+                """);
+
+        addSongButton.setOnAction(event -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Add Music Files");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Audio Files", "*.mp3", "*.wav", "*.m4a", "*.aac")
+            );
+
+            List<File> selectedFiles = fileChooser.showOpenMultipleDialog(stage);
+
+            if (selectedFiles != null && !selectedFiles.isEmpty()) {
+                playlistView.getItems().addAll(selectedFiles);
+                playlistManager.savePlaylist(playlistView.getItems());
+            }
+        });
+
+        removeSongButton.setOnAction(event -> {
+            File selectedSong = playlistView.getSelectionModel().getSelectedItem();
+
+            if (selectedSong != null) {
+                if (mediaPlayer != null) {
+                    mediaPlayer.stop();
+                    mediaPlayer.dispose();
+                    mediaPlayer = null;
+                }
+
+                playlistView.getItems().remove(selectedSong);
+                playPauseSongButton.setText("▶");
+            }
+        });
+
+        playPauseSongButton.setOnAction(event -> {
+            File selectedSong = playlistView.getSelectionModel().getSelectedItem();
+
+            if (selectedSong == null) {
+                return;
+            }
+
+            if (mediaPlayer == null || mediaPlayer.getStatus() == MediaPlayer.Status.STOPPED) {
+                playSelectedSong(playPauseSongButton);
+            } else if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+                mediaPlayer.pause();
+                playPauseSongButton.setText("▶");
+            } else {
+                mediaPlayer.play();
+                playPauseSongButton.setText("Ⅱ");
+            }
+        });
+
+        stopSongButton.setOnAction(event -> {
+            if (mediaPlayer != null) {
+                mediaPlayer.stop();
+                playPauseSongButton.setText("▶");
+            }
+        });
+
+        nextSongButton.setOnAction(event -> {
+            if (playlistView.getItems().isEmpty()) {
+                return;
+            }
+
+            int currentIndex = playlistView.getSelectionModel().getSelectedIndex();
+            int nextIndex = currentIndex + 1;
+
+            if (nextIndex >= playlistView.getItems().size()) {
+                nextIndex = 0;
+            }
+
+            playlistView.getSelectionModel().select(nextIndex);
+            playSelectedSong(playPauseSongButton);
+        });
+
+        playlistView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                playSelectedSong(playPauseSongButton);
+            }
+        });
+
         VBox timerBox = new VBox(15, titleLabel, timerLabel, startPauseButton, resetButton, statusLabel);
         VBox notesBox = new VBox(10, notesLabel, notesArea, saveNotesButton);
         HBox taskControls = new HBox(8, taskInput, addTaskButton);
         VBox taskBox = new VBox(10, checklistLabel, taskList, taskControls, deleteTaskButton);
+        HBox musicControls = new HBox(8, playPauseSongButton, stopSongButton, nextSongButton);
+        HBox playlistEditControls = new HBox(8, addSongButton, removeSongButton);
+        VBox musicBox = new VBox(10, musicLabel, playlistView, musicControls, playlistEditControls);
 
-        // Main horizontal layout that places all sections side by side.
-        HBox root = new HBox(25, timerBox, notesBox, taskBox);
+        HBox root = new HBox(25, timerBox, notesBox, taskBox, musicBox);
         root.setPadding(new Insets(25));
         root.setStyle("-fx-background-color: #1e1e2f;");
 
-        // Creates the window scene and displays the application.
-        Scene scene = new Scene(root, 950, 520);
+        Scene scene = new Scene(root, 1190, 520);
         stage.setTitle("FocusFlow Pomodoro App");
         stage.setScene(scene);
         stage.show();
     }
 
-    // Converts the remaining seconds into MM:SS format and updates the timer label.
     private void updateTimerLabel(int secondsLeft) {
         int minutes = secondsLeft / 60;
         int seconds = secondsLeft % 60;
         timerLabel.setText(String.format("%02d:%02d", minutes, seconds));
     }
 
-    // Launches the JavaFX application.
+    private void playSelectedSong(Button playPauseSongButton) {
+        File selectedSong = playlistView.getSelectionModel().getSelectedItem();
+
+        if (selectedSong == null) {
+            return;
+        }
+
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.dispose();
+        }
+
+        Media media = new Media(selectedSong.toURI().toString());
+        mediaPlayer = new MediaPlayer(media);
+
+        mediaPlayer.setOnEndOfMedia(() -> {
+            if (!playlistView.getItems().isEmpty()) {
+                int currentIndex = playlistView.getSelectionModel().getSelectedIndex();
+                int nextIndex = currentIndex + 1;
+
+                if (nextIndex >= playlistView.getItems().size()) {
+                    nextIndex = 0;
+                }
+
+                playlistView.getSelectionModel().select(nextIndex);
+                playSelectedSong(playPauseSongButton);
+            }
+        });
+
+        mediaPlayer.play();
+        playPauseSongButton.setText("Ⅱ");
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
