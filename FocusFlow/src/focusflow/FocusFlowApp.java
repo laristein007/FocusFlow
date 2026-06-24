@@ -4,14 +4,17 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * FocusFlow Pomodoro App
@@ -38,22 +41,43 @@ public class FocusFlowApp extends Application {
 
     private MediaPlayer mediaPlayer;
     private final ListView<File> playlistView = new ListView<>();
-
+    //Added for album cover
+    private javafx.scene.image.ImageView albumArtView = new javafx.scene.image.ImageView();
     @Override
     public void start(Stage stage) {
         Label modeLabel = new Label("Pomodoro");
-        modeLabel.setStyle("""
-                -fx-font-size: 82px;
-                -fx-font-weight: bold;
-                -fx-text-fill: #4b4b4f;
-                """);
-
-        timerLabel.setStyle("""
-                -fx-font-size: 110px;
-                -fx-font-weight: bold;
-                -fx-text-fill: #f5f5f5;
-                """);
-
+        
+        //*****************************************************//
+        //Added -- Laris
+        //Set ID for CSS
+        modeLabel.setId("modeLabel");
+        timerLabel.setId("timerLabel");
+        //Load fonts
+        try {
+            //Digitalio Font
+            var digitalioStream = getClass().getResourceAsStream("/fonts/round-digitalio.ttf");
+            if (digitalioStream != null) {
+                Font.loadFont(digitalioStream, 100);
+            }
+            
+            //Humaroid Font
+            var humaroidStream = getClass().getResourceAsStream("/fonts/humaroid.otf");
+            if (humaroidStream != null) {
+                Font.loadFont(humaroidStream, 100);
+            }
+            
+            //Code New Roman Font
+            var codeNewRomanStream = getClass().getResourceAsStream("/fonts/code-new-roman.otf");
+            if (codeNewRomanStream != null) {
+                Font.loadFont(codeNewRomanStream, 100);
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error loading fonts stream:");
+            e.printStackTrace();
+        }
+        //*****************************************************//
+        
         startPauseButton.setText("▶");
         startPauseButton.setStyle("""
                 -fx-font-size: 52px;
@@ -76,13 +100,16 @@ public class FocusFlowApp extends Application {
         TextArea notesArea = new TextArea();
         notesArea.setPromptText("lorem ipsum ..\nIdem 240");
         notesArea.setText(notesManager.loadNotes());
-        notesArea.setPrefSize(180, 115);
+        notesArea.setPrefSize(350, 200);
+        //Set notes to wrap properly in set area --Laris
+        notesArea.setWrapText(true);
+        
         notesArea.setStyle("""
                 -fx-control-inner-background: #50546c;
                 -fx-background-color: #50546c;
                 -fx-text-fill: #dddddd;
-                -fx-font-size: 18px;
-                -fx-font-family: "Consolas";
+                -fx-font-size: 14px;
+                -fx-font-family: "Monospace";
                 -fx-background-radius: 3px;
                 """);
 
@@ -117,6 +144,7 @@ public class FocusFlowApp extends Application {
         taskList.setPrefSize(185, 220);
         taskList.setStyle("""
                 -fx-control-inner-background: #262422;
+                -fx-font-family: "Monospace";
                 -fx-background-color: #262422;
                 -fx-background-radius: 3px;
                 -fx-border-color: transparent;
@@ -135,7 +163,7 @@ public class FocusFlowApp extends Application {
 
         for (String task : savedTasks) {
             CheckBox taskCheckBox = new CheckBox(task);
-            taskCheckBox.setStyle("-fx-text-fill: #f1ff72; -fx-font-size: 18px;");
+            taskCheckBox.setStyle("-fx-text-fill: #f1ff72; -fx-font-size: 14px;");
             taskList.getItems().add(taskCheckBox);
         }
 
@@ -147,7 +175,7 @@ public class FocusFlowApp extends Application {
                 taskManager.addTask(trimmedTask);
 
                 CheckBox newTask = new CheckBox(trimmedTask);
-                newTask.setStyle("-fx-text-fill: #f1ff72; -fx-font-size: 18px;");
+                newTask.setStyle("-fx-text-fill: #f1ff72; -fx-font-size: 14px;");
 
                 taskList.getItems().add(newTask);
                 taskInput.clear();
@@ -240,35 +268,39 @@ public class FocusFlowApp extends Application {
             modeLabel.setText("Pomodoro");
             statusLabel.setText("Timer reset");
         });
-
-        Label titleLabel = new Label("FocusFlow Pomodoro");
+        //Commented out --Laris
+        /* Label titleLabel = new Label("FocusFlow Pomodoro");
         titleLabel.setStyle("""
                 -fx-text-fill: #f3ff6b;
                 -fx-font-size: 22px;
                 -fx-font-weight: bold;
-                """);
+                """); */
 
         Label notesLabel = new Label("Notes");
-        notesLabel.setStyle("""
+        notesLabel.setId("notesLabel");
+        /* notesLabel.setStyle("""
                 -fx-text-fill: #f3ff6b;
                 -fx-font-size: 22px;
                 -fx-font-weight: bold;
-                """);
+                """); */
 
         Label checklistLabel = new Label("Checklist");
-        checklistLabel.setStyle("""
+        checklistLabel.setId("checklistLabel");
+        /*checklistLabel.setStyle("""
                 -fx-text-fill: #f3ff6b;
                 -fx-font-size: 22px;
                 -fx-font-weight: bold;
-                """);
+                """); */
 
         Label musicLabel = new Label("Music Player");
-        musicLabel.setStyle("""
+        musicLabel.setId("musicLabel");
+        /*musicLabel.setStyle("""
                 -fx-text-fill: #f3ff6b;
                 -fx-font-size: 22px;
                 -fx-font-weight: bold;
-                """);
-
+                """); */
+        
+        
         playlistView.setPrefSize(210, 220);
         playlistView.setStyle("""
                 -fx-control-inner-background: #262422;
@@ -277,7 +309,15 @@ public class FocusFlowApp extends Application {
                 -fx-border-color: transparent;
                 -fx-text-fill: #dddddd;
                 """);
-
+    //****************************************************************************//
+        //Added album cover -- Laris
+        albumArtView = new javafx.scene.image.ImageView();
+        albumArtView.setFitWidth(210);
+        albumArtView.setFitHeight(150);
+        albumArtView.setPreserveRatio(true);
+        
+        
+        
         playlistView.setCellFactory(listView -> new ListCell<>() {
             @Override
             protected void updateItem(File file, boolean empty) {
@@ -310,7 +350,7 @@ public class FocusFlowApp extends Application {
                 -fx-cursor: hand;
                 """);
 
-        Button playPauseSongButton = new Button("▶");
+        Button playPauseSongButton = new Button("▷");
         playPauseSongButton.setStyle("""
                 -fx-font-size: 24px;
                 -fx-background-color: transparent;
@@ -326,11 +366,11 @@ public class FocusFlowApp extends Application {
                 -fx-cursor: hand;
                 """);
 
-        Button nextSongButton = new Button("Next");
+        Button nextSongButton = new Button("▷|"); //Updated the icon --Laris
         nextSongButton.setStyle("""
-                -fx-background-color: #50546c;
-                -fx-text-fill: #ffffff;
-                -fx-font-weight: bold;
+                -fx-font-size: 24px;
+                -fx-background-color: transparent;
+                -fx-text-fill: #8BE9FD;
                 -fx-cursor: hand;
                 """);
 
@@ -360,7 +400,7 @@ public class FocusFlowApp extends Application {
                 }
 
                 playlistView.getItems().remove(selectedSong);
-                playPauseSongButton.setText("▶");
+                playPauseSongButton.setText("▷");
             }
         });
 
@@ -375,7 +415,7 @@ public class FocusFlowApp extends Application {
                 playSelectedSong(playPauseSongButton);
             } else if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
                 mediaPlayer.pause();
-                playPauseSongButton.setText("▶");
+                playPauseSongButton.setText("▷");
             } else {
                 mediaPlayer.play();
                 playPauseSongButton.setText("Ⅱ");
@@ -385,7 +425,7 @@ public class FocusFlowApp extends Application {
         stopSongButton.setOnAction(event -> {
             if (mediaPlayer != null) {
                 mediaPlayer.stop();
-                playPauseSongButton.setText("▶");
+                playPauseSongButton.setText("▷");
             }
         });
 
@@ -411,21 +451,41 @@ public class FocusFlowApp extends Application {
             }
         });
 
-        VBox timerBox = new VBox(15, titleLabel, timerLabel, startPauseButton, resetButton, statusLabel);
+        //VBox timerBox = new VBox(15, titleLabel, timerLabel, startPauseButton, resetButton, statusLabel);
         VBox notesBox = new VBox(10, notesLabel, notesArea, saveNotesButton);
         HBox taskControls = new HBox(8, taskInput, addTaskButton);
         VBox taskBox = new VBox(10, checklistLabel, taskList, taskControls, deleteTaskButton);
-        HBox musicControls = new HBox(8, playPauseSongButton, stopSongButton, nextSongButton);
+        //Stack checklist and notes to look like mockup --Laris
+        VBox checklistAndNotesColumn = new VBox(25, taskBox, notesBox);
+        
+        //HBox musicControls = new HBox(8, playPauseSongButton, stopSongButton, nextSongButton);
+        HBox musicControls = new HBox(12, playPauseSongButton, stopSongButton, nextSongButton);
+        musicControls.setAlignment(javafx.geometry.Pos.CENTER);
         HBox playlistEditControls = new HBox(8, addSongButton, removeSongButton);
-        VBox musicBox = new VBox(10, musicLabel, playlistView, musicControls, playlistEditControls);
+        //VBox musicBox = new VBox(10, musicLabel, playlistView, musicControls, playlistEditControls);
+        VBox musicBox = new VBox(12, musicLabel, albumArtView, playlistView, musicControls, playlistEditControls);
+        musicBox.setAlignment(javafx.geometry.Pos.CENTER);
 
-        HBox root = new HBox(25, timerBox, notesBox, taskBox, musicBox);
+        //Clean up UI: Adjusted button layout, display modeLabel --Laris
+        //Group the buttons horizontally and center them
+        HBox timerControls = new HBox(20, startPauseButton, resetButton);
+        timerControls.setAlignment(javafx.geometry.Pos.CENTER);
+        //Include modeLabel inside the vertical box list
+        VBox timerBox = new VBox(15, modeLabel, timerLabel, timerControls, statusLabel);
+        timerBox.setAlignment(javafx.geometry.Pos.CENTER);
+        
+        HBox root = new HBox(25, timerBox, checklistAndNotesColumn, musicBox);
         root.setPadding(new Insets(25));
-        root.setStyle("-fx-background-color: #1e1e2f;");
+        root.setStyle("-fx-background-color: #1e1e1eff;");
 
         Scene scene = new Scene(root, 1190, 520);
-        stage.setTitle("FocusFlow Pomodoro App");
+        //Added stylesheet --Laris
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("application.css")).toExternalForm());
+        
+        stage.setTitle("FocusFlow");
         stage.setScene(scene);
+        //Set max width --Laris
+        stage.setMaxWidth(1100);
         stage.show();
     }
 
@@ -434,36 +494,65 @@ public class FocusFlowApp extends Application {
         int seconds = secondsLeft % 60;
         timerLabel.setText(String.format("%02d:%02d", minutes, seconds));
     }
-
+    
     private void playSelectedSong(Button playPauseSongButton) {
         File selectedSong = playlistView.getSelectionModel().getSelectedItem();
-
+        
         if (selectedSong == null) {
             return;
         }
-
+        
+        // Safely clear old player resources before creating a new one
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.dispose();
         }
-
+        
+        // Initialize media stream
         Media media = new Media(selectedSong.toURI().toString());
         mediaPlayer = new MediaPlayer(media);
-
+        
+        // Track metadata additions -- Laris
+        media.getMetadata().addListener((javafx.collections.MapChangeListener<String, Object>) change -> {
+            if (change.wasAdded() && "image".equals(change.getKey())) {
+                javafx.scene.image.Image albumArt = (javafx.scene.image.Image) change.getValueAdded();
+                javafx.application.Platform.runLater(() -> albumArtView.setImage(albumArt));
+            }
+        });
+        
+        // Reset image if the song doesn't have any artwork
+        mediaPlayer.setOnReady(() -> {
+            if (!media.getMetadata().containsKey("image")) {
+                javafx.application.Platform.runLater(() -> {
+                    try {
+                        var placeholderStream = getClass().getResourceAsStream("/focusflow/resources/blank.png");
+                        if (placeholderStream != null) {
+                            albumArtView.setImage(new javafx.scene.image.Image(placeholderStream));
+                        } else {
+                            albumArtView.setImage(null);
+                        }
+                    } catch (Exception e) {
+                        albumArtView.setImage(null);
+                    }
+                });
+            }
+        });
+        
+        // Set up next track track automation safely
         mediaPlayer.setOnEndOfMedia(() -> {
             if (!playlistView.getItems().isEmpty()) {
                 int currentIndex = playlistView.getSelectionModel().getSelectedIndex();
                 int nextIndex = currentIndex + 1;
-
+                
                 if (nextIndex >= playlistView.getItems().size()) {
                     nextIndex = 0;
                 }
-
+                
                 playlistView.getSelectionModel().select(nextIndex);
                 playSelectedSong(playPauseSongButton);
             }
         });
-
+        
         mediaPlayer.play();
         playPauseSongButton.setText("Ⅱ");
     }
