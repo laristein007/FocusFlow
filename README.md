@@ -33,5 +33,11 @@ Run with ``` java -jar FocusFlow.jar ```
 
 **Mockup**
 
-![Current mockup](https://github.com/tysonhowery/Capstone-Pomodoro/blob/main/resources/mockup/iteration1/ui%20start.png)
+![Original mockup](https://github.com/tysonhowery/Capstone-Pomodoro/blob/main/resources/mockup/iteration1/ui%20start.png)
+
+## Demo
+
+
+
+https://github.com/user-attachments/assets/7e81897e-4dc2-4557-997d-b37b0e430c2b
 
