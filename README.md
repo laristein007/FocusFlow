@@ -38,6 +38,6 @@ Run with ``` java -jar FocusFlow.jar ```
 ## Demo
 
 
-
-https://github.com/user-attachments/assets/7e81897e-4dc2-4557-997d-b37b0e430c2b
+[
+https://github.com/user-attachments/assets/7e81897e-4dc2-4557-997d-b37b0e430c2b](https://github.com/tysonhowery/Capstone-Pomodoro/blob/main/demo.mp4)
 
